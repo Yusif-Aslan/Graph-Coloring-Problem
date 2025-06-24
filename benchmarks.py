@@ -7,9 +7,9 @@ from tqdm import tqdm
 
 INST_DIR = "instances"
 MAX_COLORS = 20
-HS_PARAMS = dict(hms=10, hmcr=0.9, par=0.3, iterations=500)
-ACO_PARAMS = dict(num_ants=20, alpha=1.0, beta=2.0, rho=0.1, iterations=500)
-RUNS = 30
+HS_PARAMS = dict(hms=10, hmcr=0.9, par=0.3, iterations=80)
+ACO_PARAMS = dict(num_ants=20, alpha=1.0, beta=2.0, rho=0.1, iterations=80)
+RUNS = 2
 
 def run_bench(instance_path: str, writer: csv.writer):
     name = os.path.basename(instance_path)
@@ -30,14 +30,32 @@ def run_bench(instance_path: str, writer: csv.writer):
             ])
 
 def main():
-    with open("benchmark_results.csv", "w", newline="") as f:
-        w = csv.writer(f)
-        w.writerow(["instance","algorithm","run","V","K","conflicts","time_ms"])
-        for fname in sorted(os.listdir(INST_DIR)):
-            if not fname.endswith(".col"): continue
-            path = os.path.join(INST_DIR, fname)
-            print(f"Running {fname}…")
-            run_bench(path, w)
+    # Prepare CSV output
+    with open("benchmark_results.csv", "w", newline="", encoding="utf-8") as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow([
+            "instance", "algorithm", "run",
+            "num_vertices", "max_colors",
+            "conflicts", "time_ms"
+        ])
+
+        # Gather all .col files
+        col_files = [f for f in os.listdir(INST_DIR) if f.endswith(".col")]
+        paths = [os.path.join(INST_DIR, f) for f in col_files]
+
+        # Read each graph once to get its size, then sort by |V|
+        sized = []
+        for path in paths:
+            graph = read_dimacs_graph(path)
+            sized.append((len(graph), path))
+        sized.sort(key=lambda x: x[0])  # ascending by number of vertices
+
+        # Run benchmarks smallest → largest
+        for num_vertices, path in sized:
+            fname = os.path.basename(path)
+            print(f"Benchmarking {fname} (|V|={num_vertices}) …")
+            run_bench(path, writer)
+
 
 if __name__ == "__main__":
     main()
