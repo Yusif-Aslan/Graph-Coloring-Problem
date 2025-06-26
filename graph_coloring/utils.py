@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+__author__ = "Yusif Lastname"
+
 import random
 import time
 from typing import List, Iterable

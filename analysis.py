@@ -1,47 +1,75 @@
+"""Parameter sweep experiments for Harmony Search and ACO."""
 
-import pandas as pd
-import numpy as np
-from scipy.stats import wilcoxon
+__author__ = "Yusif Lastname"
+
+from __future__ import annotations
+
+import csv
+from itertools import product
+from typing import Iterable
+
 import matplotlib.pyplot as plt
 
-df = pd.read_csv("benchmark_results.csv")
+from graph_coloring import random_graph
+from benchmarks import run_harmony, run_aco
 
 
-conflict_summary = (
-    df.groupby(["instance", "algorithm"])
-      .conflicts.agg(["mean", "std"])
-      .rename(columns={"mean": "mean_conflicts", "std": "std_conflicts"})
-      .reset_index()
-)
-conflict_summary.to_csv("conflict_summary.csv", index=False)
+def tune_hs() -> None:
+    """Explore Harmony Search parameters and save a plot."""
+    graph = random_graph(20, 0.2)
+    hms_values = [3, 5, 7]
+    hmcr_values = [0.7, 0.9]
+    par_values = [0.1, 0.3]
+    rows: list[list[float]] = []
+    for hms, hmcr, par in product(hms_values, hmcr_values, par_values):
+        params = dict(max_colors=4, hms=hms, hmcr=hmcr, par=par, iterations=50)
+        conflicts, ms = run_harmony(graph, params)
+        rows.append([hms, hmcr, par, conflicts, ms])
+    with open("hs_results.csv", "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["hms", "hmcr", "par", "conflicts", "ms"])
+        writer.writerows(rows)
+    hms_list = [r[0] for r in rows if r[1] == 0.9 and r[2] == 0.3]
+    conflicts_list = [r[3] for r in rows if r[1] == 0.9 and r[2] == 0.3]
+    plt.plot(hms_list, conflicts_list, marker="o")
+    plt.xlabel("HMS")
+    plt.ylabel("Conflicts")
+    plt.title("Harmony Search Parameter Sweep")
+    plt.savefig("hs_plot.png")
 
 
-wilcoxon_rows = []
-for inst in df.instance.unique():
-    sub = df[df.instance == inst]
-    hs = sub[sub.algorithm == "HarmonySearch"].sort_values(
-        "run").conflicts.values
-    ac = sub[sub.algorithm == "AntColony"].sort_values("run").conflicts.values
-
-    diffs = hs - ac
-    if np.var(diffs) == 0:
-        pval = np.nan
-    else:
-        _, pval = wilcoxon(hs, ac)
-    wilcoxon_rows.append({"instance": inst, "wilcoxon_p": pval})
-
-pd.DataFrame(wilcoxon_rows).to_csv("wilcoxon_results.csv", index=False)
-
-
-for metric in ["conflicts", "time_ms"]:
+def tune_aco() -> None:
+    """Explore ACO parameters and save a plot."""
+    graph = random_graph(20, 0.2)
+    alpha_values = [0.5, 1.0, 1.5]
+    beta_values = [1.0, 2.0]
+    rho_values = [0.1, 0.3]
+    rows: list[list[float]] = []
+    for alpha, beta, rho in product(alpha_values, beta_values, rho_values):
+        params = dict(
+            max_colors=4,
+            num_ants=10,
+            alpha=alpha,
+            beta=beta,
+            rho=rho,
+            iterations=50,
+        )
+        conflicts, ms = run_aco(graph, params)
+        rows.append([alpha, beta, rho, conflicts, ms])
+    with open("aco_results.csv", "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["alpha", "beta", "rho", "conflicts", "ms"])
+        writer.writerows(rows)
+    alpha_list = [r[0] for r in rows if r[1] == 2.0 and r[2] == 0.1]
+    conflicts_list = [r[3] for r in rows if r[1] == 2.0 and r[2] == 0.1]
     plt.figure()
-    df.boxplot(column=metric, by="algorithm")
-    plt.title(f"{metric.capitalize()} by Algorithm")
-    plt.suptitle("")
-    plt.xlabel("Algorithm")
-    plt.ylabel(metric)
-    plt.tight_layout()
-    plt.savefig(f"{metric}_boxplot.png")
-    plt.close()
+    plt.plot(alpha_list, conflicts_list, marker="o")
+    plt.xlabel("alpha")
+    plt.ylabel("Conflicts")
+    plt.title("ACO Parameter Sweep")
+    plt.savefig("aco_plot.png")
 
-print("Analysis complete. Tables and plots saved.")
+
+if __name__ == "__main__":
+    tune_hs()
+    tune_aco()

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+__author__ = "Yusif Lastname"
+
 import math
 import random
 from typing import List, Tuple

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+__author__ = "Yusif Lastname"
+
 from . import harmony_search_coloring, aco_coloring, Timer
 
 Graph = list[list[int]]

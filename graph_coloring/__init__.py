@@ -1,5 +1,7 @@
 """Graph coloring algorithms using Harmony Search and ACO."""
 
+__author__ = "Yusif Lastname"
+
 from .harmony import harmony_search_coloring
 from .aco import aco_coloring
 from .parsing import read_graph, write_graph

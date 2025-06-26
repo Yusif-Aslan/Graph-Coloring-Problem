@@ -1,3 +1,27 @@
+__author__ = "Yusif Lastname"
+
+
+
+def read_col_graph(path: str) -> Graph:
+    """Read a DIMACS ``.col`` graph file."""
+    with open(path, "r", encoding="utf-8") as file:
+        num_vertices = 0
+        edges: list[tuple[int, int]] = []
+        for line in file:
+            line = line.strip()
+            if not line or line.startswith("c"):
+                continue
+            if line.startswith("p"):
+                parts = line.split()
+                num_vertices = int(parts[2])
+            elif line.startswith("e"):
+                _, u, v = line.split()
+                edges.append((int(u) - 1, int(v) - 1))
+    graph: Graph = [[] for _ in range(num_vertices)]
+    for u, v in edges:
+        graph[u].append(v)
+        graph[v].append(u)
+    return graph
 # graph_coloring/parsing.py
 
 from __future__ import annotations
