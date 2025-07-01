@@ -1,6 +1,6 @@
 # Graph Coloring with Harmony Search and ACO
-Author: Yusif Lastname
-__author__ = "Yusif Lastname"
+
+__author__  "Yusif-Aslan Mammadov"
 
 This package provides two metaheuristic algorithms for solving the
 undirected graph coloring problem: **Harmony Search** and
@@ -96,4 +96,3 @@ plots. These experiments helped identify good defaults for ``hms``,
 ```bash
 pytest
 ```
-

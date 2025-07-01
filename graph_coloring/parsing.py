@@ -1,39 +1,22 @@
-__author__ = "Yusif Lastname"
 
-
-
-def read_col_graph(path: str) -> Graph:
-    """Read a DIMACS ``.col`` graph file."""
-    with open(path, "r", encoding="utf-8") as file:
-        num_vertices = 0
-        edges: list[tuple[int, int]] = []
-        for line in file:
-            line = line.strip()
-            if not line or line.startswith("c"):
-                continue
-            if line.startswith("p"):
-                parts = line.split()
-                num_vertices = int(parts[2])
-            elif line.startswith("e"):
-                _, u, v = line.split()
-                edges.append((int(u) - 1, int(v) - 1))
-    graph: Graph = [[] for _ in range(num_vertices)]
-    for u, v in edges:
-        graph[u].append(v)
-        graph[v].append(u)
-    return graph
-# graph_coloring/parsing.py
+"""Graph parsing utilities for graph_coloring package."""
 
 from __future__ import annotations
+
 from typing import List
 
 Graph = List[List[int]]
 
+
 def read_graph(path: str) -> Graph:
-    """Read a simple adjacency‐list text file (one line per vertex)."""
+    """Read a simple adjacency‐list text file (one line per vertex).
+
+    Each line contains space-separated neighbor indices for a vertex.
+    Lines starting with '#' or empty lines denote vertices with no neighbors.
+    """
     graph: Graph = []
-    with open(path, "r", encoding="utf-8") as f:
-        for line in f:
+    with open(path, "r", encoding="utf-8") as file:
+        for line in file:
             stripped = line.strip()
             if not stripped or stripped.startswith("#"):
                 graph.append([])
@@ -41,27 +24,28 @@ def read_graph(path: str) -> Graph:
                 graph.append([int(x) for x in stripped.split()])
     return graph
 
+
 def write_graph(graph: Graph, path: str) -> None:
-    """Write an adjacency list to a file (one line per vertex)."""
-    with open(path, "w", encoding="utf-8") as f:
-        for nbrs in graph:
-            f.write(" ".join(map(str, nbrs)) + "\n")
+    """Write a graph to a file in adjacency‐list format."""
+    with open(path, "w", encoding="utf-8") as file:
+        for neighbors in graph:
+            file.write(" ".join(map(str, neighbors)) + "\n")
+
 
 def read_dimacs_graph(path: str) -> Graph:
     """
     Parse a DIMACS-format .col file (ASCII).
-    - Lines starting with 'c' are comments.
-    - A line 'p edge N M' declares number of vertices (N) and edges (M).
-    - Lines 'e u v' define an undirected edge (1-based indices).
+    Lines beginning with 'c' are comments;
+    'p edge N M' declares number of vertices N and edges M;
+    'e u v' defines an undirected edge (1-based indices).
     """
     graph: Graph = []
-    with open(path, "r", encoding="utf-8") as f:
-        for line in f:
+    with open(path, "r", encoding="utf-8") as file:
+        for line in file:
             parts = line.split()
             if not parts or parts[0] == "c":
                 continue
             if parts[0] == "p":
-                # initialize adjacency list
                 n = int(parts[2])
                 graph = [[] for _ in range(n)]
             elif parts[0] == "e":

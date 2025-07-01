@@ -1,8 +1,6 @@
-"""Ant Colony Optimization for graph coloring."""
 
 from __future__ import annotations
 
-__author__ = "Yusif Lastname"
 
 import math
 import random

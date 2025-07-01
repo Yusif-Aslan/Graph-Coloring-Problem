@@ -1,8 +1,6 @@
-"""Harmony Search algorithm for graph coloring."""
+
 
 from __future__ import annotations
-
-__author__ = "Yusif Lastname"
 
 import random
 from typing import List, Tuple
